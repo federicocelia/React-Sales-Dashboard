@@ -1,38 +1,56 @@
-import supabase from "./supabase-client.js";
+import supabase from "./supabase-client";
 import { useEffect, useState } from "react";
 import { Chart } from "react-charts";
 
 function Dashboard() {
   const [metrics, setMetrics] = useState([]);
 
-  async function fetchMetrics() {
-    try {
-      const { error, data } = await supabase.from("sales_deals").select(
-        `
-    name,
-    total_sales:value.sum()
-    `,
-      );
-      if (error) {
-        console.log(error);
-        throw error;
-      }
-      console.log(data);
-      return setMetrics(data);
-    } catch (error) {
-      console.log(`There has been an error: ${error}`);
-    }
-  }
-
   useEffect(() => {
     fetchMetrics();
+
+    const channel = supabase
+      .channel("deal-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sales_deals",
+        },
+        (payload) => {
+          fetchMetrics();
+        },
+      )
+      .subscribe();
+
+    // Clean up subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  async function fetchMetrics() {
+    try {
+      const { data, error } = await supabase.from("sales_deals").select(
+        `
+          name,
+          value.sum()
+          `,
+      );
+      if (error) {
+        throw error;
+      }
+      setMetrics(data);
+    } catch (error) {
+      console.error("Error fetching metrics:", error);
+    }
+  }
 
   const chartData = [
     {
       data: metrics.map((m) => ({
         primary: m.name,
-        secondary: m.total_sales,
+        secondary: m.sum,
       })),
     },
   ];
@@ -43,6 +61,14 @@ function Dashboard() {
     padding: 0.2,
     position: "bottom",
   };
+
+  function y_max() {
+    if (metrics.length > 0) {
+      const maxSum = Math.max(...metrics.map((m) => m.sum));
+      return maxSum + 2000;
+    }
+    return 5000;
+  }
 
   const secondaryAxes = [
     {
@@ -56,14 +82,6 @@ function Dashboard() {
       },
     },
   ];
-
-  function y_max() {
-    if (metrics.length > 0) {
-      const maxSum = Math.max(...metrics.map((m) => m.sum));
-      return maxSum + 2000;
-    }
-    return 5000;
-  }
 
   return (
     <div className="dashboard-wrapper">
