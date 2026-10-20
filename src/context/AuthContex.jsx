@@ -8,19 +8,17 @@ export const AuthContextProvider = ({ children }) => {
   const [session, setSession] = useState(undefined);
 
   useEffect(() => {
-    const getInitialSession = async () => {
+    async function getInitialSession() {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           throw error;
         }
-        console.log(data.session);
         setSession(data.session);
       } catch (error) {
         console.error("Error getting session:", error.message);
       }
-    };
-
+    }
     getInitialSession();
 
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -29,7 +27,7 @@ export const AuthContextProvider = ({ children }) => {
     });
   }, []);
 
-  //Auth functions (signin, signup, logout)
+  //Auth functions (signup, logout)
   const signInUser = async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -37,25 +35,40 @@ export const AuthContextProvider = ({ children }) => {
         password: password,
       });
       if (error) {
-        console.error("Supabase sign-in error", error.message);
-        return {
-          success: false,
-          error: error.message,
-        };
+        console.error("Supabase sign-in error:", error.message);
+        return { success: false, error: error.message };
       }
-      console.log("Supabase sign-in success", data);
-      return { success: true, data: data };
+      console.log("Supabase sign-in success:", data);
+      return { success: true, data };
     } catch (error) {
-      console.error("Unexpected error during sing-in; ", error.message);
+      console.error("Unexpected error during sign-in:", error.message);
       return {
         success: false,
-        error: "An unexpected error occured. Please try again",
+        error: "An unexpected error occurred. Please try again.",
+      };
+    }
+  };
+
+  const signOutUser = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Supabase sign-out error:", error.message);
+        return { success: false, error: error.message };
+      }
+      console.log("Supabase sign-out success");
+      return;
+    } catch (error) {
+      console.error("Unexpected error during sign-out:", error.message);
+      return {
+        success: false,
+        error: "An unexpected error occurred during sign-out.",
       };
     }
   };
 
   return (
-    <AuthContext.Provider value={{ session, signInUser }}>
+    <AuthContext.Provider value={{ session, signInUser, signOutUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,8 +1,10 @@
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContex.jsx";
 import { useActionState } from "react";
 import supabase from "../supabase-client";
 
 const Signin = () => {
+  const navigate = useNavigate();
   const { signInUser } = useAuth();
 
   const [error, submitAction, isPending] = useActionState(
@@ -20,7 +22,7 @@ const Signin = () => {
       }
 
       if (success && data?.session) {
-        //navigate to dashboard route
+        navigate("/dashboard");
         return null;
       }
       return null;
@@ -44,9 +46,10 @@ const Signin = () => {
 
           <h2 className="form-title">Sign in</h2>
           <p>
-            Don't have an account yet? {/*<Link className="form-link">*/}
-            Sign up
-            {/*</Link>*/}
+            Don't have an account yet?{" "}
+            <Link className="form-link" to="/signup">
+              Sign up
+            </Link>
           </p>
 
           <label htmlFor="email">Email</label>
