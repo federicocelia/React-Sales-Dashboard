@@ -1,12 +1,41 @@
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useActionState } from "react";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { signUpNewUser } = useAuth();
+
+  const [error, submitAction, isPending] = useActionState(
+    async (previousState, formData) => {
+      const email = formData.get("email");
+      const password = formData.get("password");
+
+      const {
+        success,
+        data,
+        error: signUpError,
+      } = await signUpNewUser(email, password);
+      if (signUpError) {
+        return new Error(signUpError);
+      }
+
+      if (success && data?.session) {
+        navigate("/dashboard");
+      } else if (success) {
+        navigate("/signin");
+      }
+      return null;
+    },
+    null,
+  );
+
   return (
     <>
       <h1 className="landing-header">Paper Like A Boss</h1>
       <div className="sign-form-container">
         <form
-          // action={}
+          action={submitAction}
           aria-label="Sign up form"
           aria-describedby="form-description"
         >
@@ -32,9 +61,9 @@ const Signup = () => {
             placeholder=""
             required
             aria-required="true"
-            //aria-invalid=
-            //aria-describedby=
-            //disabled=
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "Signup-error" : undefined}
+            disabled={isPending}
           />
 
           <label htmlFor="password">Password</label>
@@ -46,22 +75,25 @@ const Signup = () => {
             placeholder=""
             required
             aria-required="true"
-            //aria-invalid=
-            //aria-describedby=
-            //disabled=
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "Signup-error" : undefined}
+            disabled={isPending}
           />
 
           <button
             type="submit"
             className="form-button"
-            //disabled=
-            //aria-busy=
+            disabled={isPending}
+            aria-busy={isPending}
           >
-            Sign Up
-            {/*'Signing up...' when pending*/}
+            {isPending ? "Signing up..." : "Sign Up"}
           </button>
 
-          {/* Error message */}
+          {error && (
+            <div role="alert" className="error-message">
+              {error.message}
+            </div>
+          )}
         </form>
       </div>
     </>

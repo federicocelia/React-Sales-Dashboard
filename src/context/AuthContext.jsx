@@ -66,8 +66,31 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
+  const signUpNewUser = async (email, password) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.toLowerCase(),
+        password: password,
+      });
+      if (error) {
+        console.error("Supabase sign-up error:", error.message);
+        return { success: false, error: error.message };
+      }
+      console.log("Supabase sign-up success:", data);
+      return { success: true, data };
+    } catch (error) {
+      console.error("Unexpected error during sign-up:", error.message);
+      return {
+        success: false,
+        error: "An unexpected error occurred. Please try again.",
+      };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ session, signInUser, signOut }}>
+    <AuthContext.Provider
+      value={{ session, signInUser, signOut, signUpNewUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
