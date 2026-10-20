@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContex.jsx";
+import { useAuth } from "../context/AuthContext";
 import { useActionState } from "react";
 import supabase from "../supabase-client";
 

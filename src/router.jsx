@@ -3,10 +3,16 @@ import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import Dashboard from "./routes/Dashboard";
 import Header from "./components/Header";
+import RootRedirect from "./routes/RootRedirect";
+import ProtectedRoot from "./components/ProtectedRoot";
 
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <RootRedirect />,
+  },
+  {
+    path: "/signin",
     element: <Signin />,
   },
   {
@@ -17,8 +23,10 @@ const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <>
-        <Header />
-        <Dashboard />
+        <ProtectedRoot>
+          <Header />
+          <Dashboard />
+        </ProtectedRoot>
       </>
     ),
   },
