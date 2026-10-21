@@ -1,10 +1,11 @@
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useActionState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
-  const navigate = useNavigate();
   const { signUpNewUser } = useAuth();
+  const navigate = useNavigate();
 
   const [error, submitAction, isPending] = useActionState(
     async (previousState, formData) => {
@@ -16,14 +17,13 @@ const Signup = () => {
         data,
         error: signUpError,
       } = await signUpNewUser(email, password);
+
       if (signUpError) {
         return new Error(signUpError);
       }
-
       if (success && data?.session) {
         navigate("/dashboard");
-      } else if (success) {
-        navigate("/signin");
+        return null;
       }
       return null;
     },
@@ -62,7 +62,7 @@ const Signup = () => {
             required
             aria-required="true"
             aria-invalid={error ? "true" : "false"}
-            aria-describedby={error ? "Signup-error" : undefined}
+            aria-describedby={error ? "signup-error" : undefined}
             disabled={isPending}
           />
 
@@ -76,9 +76,32 @@ const Signup = () => {
             required
             aria-required="true"
             aria-invalid={error ? "true" : "false"}
-            aria-describedby={error ? "Signup-error" : undefined}
+            aria-describedby={error ? "signup-error" : undefined}
             disabled={isPending}
           />
+
+          <fieldset
+            className="form-fieldset"
+            aria-required="true"
+            aria-label="Select your role"
+          >
+            <legend>Select your role</legend>
+            <div className="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="account-type"
+                  value="admin"
+                  required
+                />{" "}
+                Admin
+              </label>
+              <label>
+                <input type="radio" name="account-type" value="rep" required />{" "}
+                Sales Rep
+              </label>
+            </div>
+          </fieldset>
 
           <button
             type="submit"
@@ -90,7 +113,11 @@ const Signup = () => {
           </button>
 
           {error && (
-            <div role="alert" className="error-message">
+            <div
+              id="signup-error"
+              role="alert"
+              className="sign-form-error-message"
+            >
               {error.message}
             </div>
           )}
