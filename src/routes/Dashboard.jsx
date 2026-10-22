@@ -35,9 +35,11 @@ function Dashboard() {
     try {
       const { data, error } = await supabase.from("sales_deals").select(
         `
-          name,
-          value.sum()
-          `,
+    total_sales:value.sum(),
+    ...user_profiles!inner(
+      name
+    )
+    `,
       );
       if (error) {
         throw error;
@@ -52,7 +54,7 @@ function Dashboard() {
     {
       data: metrics.map((m) => ({
         primary: m.name,
-        secondary: m.sum,
+        secondary: m.total_sales,
       })),
     },
   ];
@@ -104,7 +106,7 @@ function Dashboard() {
           />
         </div>
       </div>
-      <Form metrics={metrics} />
+      <Form />
     </div>
   );
 }
