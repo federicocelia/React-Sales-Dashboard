@@ -11,12 +11,14 @@ const Signup = () => {
     async (previousState, formData) => {
       const email = formData.get("email");
       const password = formData.get("password");
+      const name = formData.get("name");
+      const accountType = formData.get("account-type");
 
       const {
         success,
         data,
         error: signUpError,
-      } = await signUpNewUser(email, password);
+      } = await signUpNewUser(email, password, name, accountType);
 
       if (signUpError) {
         return new Error(signUpError);
@@ -51,6 +53,20 @@ const Signup = () => {
               Sign in
             </Link>
           </p>
+
+          <label htmlFor="name">Name</label>
+          <input
+            className="form-input"
+            type="text"
+            name="name"
+            id="name"
+            placeholder=""
+            required
+            aria-required="true"
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? "signup-error" : undefined}
+            disabled={isPending}
+          />
 
           <label htmlFor="email">Email</label>
           <input
